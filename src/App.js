@@ -21,12 +21,12 @@ function App() {
         category={category}
         id="Map"
       />
-      {/* <TableauEmbed 
+      <TableauEmbed 
         viewUrl={`${env.TS_URL}/t/til2/views/SuperstoreDemoNummer1/ProductSalesvsProfit`}
         category={category}
         noToken={true}
         id="Scatter"
-      /> */}
+      />
     </div>
   );
 }

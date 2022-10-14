@@ -36,10 +36,12 @@ function TableauEmbed(props) {
 	const showMobile = width <= 1050;
 
 	const vizIsReady = async (event) => {
+		console.log('[TableauEmbed.js] vizIsReady');
 		setShowViz(true);
 	}
 
 	const loadViz = (t) => {
+		console.log('[TableauEmbed.js] loadViz');
 		setViz(
 			<tableau-viz 
 				ref={vizRef}
@@ -52,10 +54,13 @@ function TableauEmbed(props) {
 				width={props.width}
 				touch-optimize={props.showMobile}
 			>
-			<viz-filter field="Category" value={props.category}> </viz-filter> 
 		  </tableau-viz>
 		)
-		vizIsReady();
+		setTimeout(() => {
+			const tableauRef = vizRef.current;
+			console.log('[TableauEmbed.js] Add listener to', tableauRef);
+			tableauRef.addEventListener("firstinteractive", vizIsReady)
+		}, 3000)
 	}
 
 	  useEffect(() => {
@@ -68,6 +73,7 @@ function TableauEmbed(props) {
 			throw response;
 			})
 			.then(data => {
+				console.log('[TableauEmbed.js] token', data);
 				setToken(data);
 				loadViz(data);
 			})
@@ -80,18 +86,27 @@ function TableauEmbed(props) {
 	}, []);
 
 	useEffect(() => {
-		if (showViz) {
+		console.log('[TableauEmbed.js] showViz', showViz);
+		if (showViz === true) {
 			const tableauRef = vizRef.current;
 			const sheet = tableauRef.workbook.activeSheet;
 			if (sheet && sheet.worksheets) {
 				const map = sheet.worksheets.find(ws => ws.name ==="Profit Map");
-				console.log(map);
-				if (map) {
+				if (map && props.category !== 'All') {
 					map.applyFilterAsync("Category", [props.category], "replace");
+				} else if (map && props.category === 'All') {
+					map.applyFilterAsync("Category", [], "all");
+				}
+				const scatter = sheet.worksheets.find(ws => ws.name ==="Product Sales vs Profit");
+				console.log(scatter);
+				if (scatter && props.category !== 'All') {
+					scatter.applyFilterAsync("Category", [props.category], "replace");
+				} else if (scatter && props.category === 'All') {
+					scatter.applyFilterAsync("Category", [], "all");
 				}
 			}
 		}
-	},[props.category])
+	},[props.category, showViz])
   
 
 	return viz ? viz : null;
